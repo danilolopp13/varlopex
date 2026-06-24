@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Varlopex — Motoristas</title>
+<style>
+:root{
+  --bg:#F0EFED;
+  --card:#FFFFFF;
+  --primary:#2E7D52;
+  --primary-light:#E8F5EE;
+  --danger:#DC2626;
+  --success:#2E7D52;
+  --text:#1A1A1A;
+  --text2:#6B7280;
+  --border:#E4E2DE;
+  --radius:14px;
+  --sh:0 1px 3px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#DDDBD7;color:var(--text);min-height:100vh;font-size:16px;display:flex;justify-content:center;align-items:flex-start}
+#wrap{width:100%;max-width:430px;min-height:100vh;background:var(--bg);position:relative;box-shadow:0 0 40px rgba(0,0,0,.13);display:flex;flex-direction:column}
+.screen{display:none;flex:1;flex-direction:column;min-height:100vh}
+.screen.active{display:flex}
+
+/* ── LOGIN ── */
+#login-screen{background:var(--bg);align-items:center;justify-content:center;padding:48px 32px;gap:0}
+.login-logo{text-align:center;margin-bottom:40px}
+.login-icon{width:76px;height:76px;background:var(--primary);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.login-icon svg{width:38px;height:38px}
+.login-logo h1{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.login-logo p{font-size:14px;color:var(--text2);margin-top:3px}
+.login-form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:14px}
+.lf-field{display:flex;flex-direction:column;gap:6px}
+.lf-field label{font-size:14px;color:var(--text2);font-weight:500}
+.lf-field input{padding:13px 15px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;color:var(--text);background:#fff;outline:none;font-family:inherit}
+.lf-field input:focus{border-color:var(--primary)}
+.btn-login{padding:14px;border-radius:10px;border:1.5px solid var(--border);font-size:15px;font-weight:600;cursor:pointer;background:#fff;color:var(--text);transition:.12s}
+.btn-login:active{background:#F5F4F2}
+.login-error{background:#FEE2E2;color:var(--danger);padding:11px 14px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;display:none}
+
+/* ── HOME HEADER ── */
+.home-head{background:#fff;padding:18px 20px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0}
+.head-info{flex:1}
+.head-name{font-size:17px;font-weight:700;color:var(--text)}
+.head-sub{font-size:13px;color:var(--text2);margin-top:1px}
+.btn-sair{background:none;border:none;cursor:pointer;color:var(--text2);padding:6px;font-size:20px;line-height:1}
+
+/* ── HOME BODY ── */
+.home-body{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-bottom:90px}
+.op-tag{display:inline-flex;align-items:center;gap:6px;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 12px;border-radius:20px}
+.kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:#fff;border-radius:var(--radius);padding:16px;border:1px solid var(--border)}
+.kpi-label{font-size:13px;color:var(--text2);margin-bottom:6px}
+.kpi-val{font-size:32px;font-weight:800;color:var(--text);line-height:1}
+.kpi-sub{font-size:11px;color:var(--primary);font-weight:600;margin-top:4px}
+
+/* Botões home */
+.action-list{display:flex;flex-direction:column;gap:8px}
+.action-btn{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.12s;text-align:left}
+.action-btn:active{background:#F5F4F2;transform:scale(.99)}
+.action-btn .ab-icon{font-size:20px;width:36px;text-align:center;flex-shrink:0}
+.action-btn .ab-text{font-size:16px;font-weight:600;color:var(--text)}
+.action-btn .ab-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.action-btn .ab-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100}
+.bnav-btn{flex:1;padding:12px 0 10px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;font-size:11px;color:var(--text2);font-weight:500;transition:.1s}
+.bnav-btn.active{color:var(--primary)}
+.bnav-btn .bnav-icon{font-size:22px;line-height:1}
+.bnav-center{width:48px;height:48px;border-radius:50%;background:#fff;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;margin-top:-20px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+
+/* ── TELAS INTERNAS ── */
+.topbar{background:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.btn-back{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text);padding:2px;line-height:1}
+.topbar-title{font-size:17px;font-weight:700;color:var(--text);flex:1}
+.topbar-sub{font-size:12px;color:var(--text2);margin-top:1px}
+.content{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-bottom:30px}
+.card{background:#fff;border-radius:var(--radius);padding:18px;border:1px solid var(--border)}
+.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);margin-bottom:12px}
+
+/* Inputs internos */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:14px;color:var(--text2);font-weight:500}
+.field .hint{font-size:12px;color:var(--text2)}
+.field input,.field select,.field textarea{padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;color:var(--text);background:#fff;outline:none;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary)}
+.field textarea{resize:none;min-height:80px}
+
+/* Botões internos */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;border-radius:12px;border:1.5px solid var(--border);font-size:15px;font-weight:600;cursor:pointer;transition:.12s;background:#fff;color:var(--text)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-outline{background:#fff;color:var(--text);border-color:var(--border)}
+.btn-sm{padding:9px 16px;font-size:13px;width:auto}
+.btn:active{opacity:.85}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Checklist */
+.check-item{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.check-item:last-child{border-bottom:none}
+.check-box{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:transparent;transition:.12s}
+.check-box.checked{background:var(--primary);border-color:var(--primary);color:#fff}
+.check-label{font-size:15px;font-weight:600;color:var(--text)}
+.check-desc{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* Foto */
+.foto-area{border:1.5px dashed var(--border);border-radius:12px;padding:22px;text-align:center;cursor:pointer;position:relative;background:#FAFAF8}
+.foto-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.foto-area .ico{font-size:28px;margin-bottom:6px}
+.foto-area p{font-size:13px;color:var(--text2);font-weight:500}
+.foto-preview{width:100%;border-radius:10px;margin-top:10px;display:none;max-height:200px;object-fit:cover}
+
+/* Coleta cards */
+.coleta-card{background:#FAFAF8;border-radius:12px;padding:13px;border:1.5px solid var(--border);cursor:pointer;margin-bottom:8px;transition:.12s}
+.coleta-card.selected{border-color:var(--primary);background:#F0FBF5}
+.coleta-card .cc-title{font-size:14px;font-weight:700;color:var(--text)}
+.coleta-card .cc-info{font-size:12px;color:var(--text2);margin-top:3px}
+
+/* Entrega item */
+.entrega-item{background:#FAFAF8;border-radius:10px;padding:12px;margin-bottom:8px;border-left:3px solid var(--border);border:1px solid var(--border);border-left:3px solid var(--border)}
+.entrega-item .ei-title{font-size:14px;font-weight:700;color:var(--text)}
+.entrega-item .ei-info{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* ADM */
+.adm-tab{display:flex;background:#fff;border-bottom:1px solid var(--border)}
+.adm-tab button{flex:1;padding:14px;background:none;border:none;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.adm-tab button.active{color:var(--primary);border-bottom-color:var(--primary)}
+.driver-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)}
+.driver-row:last-child{border-bottom:none}
+.driver-name{font-size:15px;font-weight:700;color:var(--text)}
+.driver-info{font-size:12px;color:var(--text2);margin-top:1px}
+.driver-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+.badge-ok{background:#D1FAE5;color:#065F46}
+.badge-pend{background:#FEF3C7;color:#92400E}
+.badge-no{background:#F3F4F6;color:var(--text2)}
+.premio-tag{background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px}
+.kpi-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi2{background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid var(--border)}
+.kpi2 .kv{font-size:26px;font-weight:900;color:var(--text)}
+.kpi2 .kl{font-size:11px;color:var(--text2);margin-top:3px}
+
+/* Saldo */
+.saldo-valor{font-size:36px;font-weight:900;color:var(--primary);margin:6px 0 2px}
+
+/* Tags */
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:#F3F4F6;color:var(--text2)}
+.tag.green{background:#D1FAE5;color:#065F46}
+.tag.blue{background:#DBEAFE;color:#1D4ED8}
+
+/* Toast */
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(30px);background:#1A1A1A;color:#fff;padding:11px 22px;border-radius:30px;font-size:14px;font-weight:600;z-index:999;transition:.25s;opacity:0;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(240,239,237,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;gap:14px}
+.spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay p{font-size:13px;font-weight:600;color:var(--text2)}
+
+/* Misc */
+.empty-state{text-align:center;padding:36px 20px;color:var(--text2)}
+.empty-state .emo{font-size:34px;margin-bottom:10px}
+.empty-state p{font-size:14px}
+.total-abast{background:var(--primary-light);border-radius:10px;padding:13px;text-align:center;font-size:18px;font-weight:800;color:var(--primary);display:none;margin-top:4px}
+</style>
+</head>
+<body>
+<div id="wrap">
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading" style="display:none">
+  <div class="spinner"></div>
+  <p>Aguarde...</p>
+</div>
+
+<!-- ════════ LOGIN ════════ -->
+<div class="screen active" id="login-screen">
+  <div class="login-logo">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+      </svg>
+    </div>
+    <h1>Varlopex</h1>
+    <p>App do motorista</p>
+  </div>
+  <div class="login-form">
+    <div class="lf-field">
+      <label>Usuário</label>
+      <input type="text" id="inp-nome" placeholder="Ex: gabriel" autocomplete="off" autocapitalize="none"/>
+    </div>
+    <div class="lf-field">
+      <label>Senha</label>
+      <input type="password" id="inp-senha" placeholder="Sua senha"/>
+    </div>
+    <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+    <div class="login-error" id="login-erro">Usuário ou senha incorretos</div>
+  </div>
+</div>
+
+<!-- ════════ HOME CIMENTO ════════ -->
+<div class="screen" id="home-cimento">
+  <div class="home-head">
+    <div class="avatar" id="home-avatar">GA</div>
+    <div class="head-info">
+      <div class="head-name" id="home-nome">Gabriel</div>
+      <div class="head-sub" id="home-placa">Caminhão: MZQ-1A08</div>
+    </div>
+    <button class="btn-sair" onclick="logout()" title="Sair">⎋</button>
+  </div>
+  <div class="home-body">
+    <div><span class="op-tag">🏭 OPERAÇÃO CIMENTO · FERCAL</span></div>
+    <div id="status-coleta" style="display:none" class="card" style="border-left:3px solid var(--primary)">
+      <div style="font-size:13px;font-weight:600;color:var(--primary)">● Coleta em andamento</div>
+      <div id="status-info" style="font-size:12px;color:var(--text2);margin-top:2px"></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Coletas hoje</div>
+        <div class="kpi-val" id="kpi-hoje">0</div>
+        <div class="kpi-sub" id="kpi-premio-label"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Coletas no mês</div>
+        <div class="kpi-val" id="kpi-mes">0</div>
+      </div>
+    </div>
+    <div class="action-list">
+      <button class="action-btn" onclick="ir('coleta-screen')">
+        <span class="ab-icon">+</span>
+        <div><div class="ab-text">Registrar coleta</div><div class="ab-sub">Sair da fábrica com carga</div></div>
+      </button>
+      <button class="action-btn" onclick="irEntregas()" id="btn-entrega-home">
+        <span class="ab-icon">✓</span>
+        <div><div class="ab-text">Confirmar entrega</div><div class="ab-sub">Registrar canhoto e entrega</div></div>
+        <span class="ab-badge" id="badge-entrega" style="display:none">0</span>
+      </button>
+      <button class="action-btn" onclick="ir('abast-screen')">
+        <span class="ab-icon">⛽</span>
+        <div><div class="ab-text">Abastecer</div><div class="ab-sub">Registrar combustível</div></div>
+      </button>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="bnav-btn active" onclick="irHome()">
+      <span class="bnav-icon">🏠</span>Início
+    </button>
+    <button class="bnav-btn" onclick="ir('coleta-screen')">
+      <div class="bnav-center">↓</div>
+    </button>
+    <button class="bnav-btn" onclick="ir('saldo-screen')">
+      <span class="bnav-icon">💰</span>Meu saldo
+    </button>
+  </nav>
+</div>
+
+<!-- ════════ HOME CARRETA ════════ -->
+<div class="screen" id="home-carreta">
+  <div class="home-head">
+    <div class="avatar" id="carreta-avatar">CL</div>
+    <div class="head-info">
+      <div class="head-name" id="carreta-nome">Cleber</div>
+      <div class="head-sub">Operação Carreta</div>
+    </div>
+    <button class="btn-sair" onclick="logout()">⎋</button>
+  </div>
+  <div class="home-body">
+    <div><span class="op-tag">🚛 OPERAÇÃO CARRETA</span></div>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Viagens no mês</div>
+        <div class="kpi-val" id="kpi-viagens">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Em andamento</div>
+        <div class="kpi-val" id="kpi-viagens-and">0</div>
+      </div>
+    </div>
+    <div class="action-list">
+      <button class="action-btn" onclick="ir('viagem-screen')">
+        <span class="ab-icon">+</span>
+        <div><div class="ab-text">Nova viagem</div><div class="ab-sub">Registrar saída e carga</div></div>
+      </button>
+      <button class="action-btn" onclick="ir('abast-screen')">
+        <span class="ab-icon">⛽</span>
+        <div><div class="ab-text">Abastecer</div><div class="ab-sub">Registrar combustível</div></div>
+      </button>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="bnav-btn active" onclick="irHome()">
+      <span class="bnav-icon">🏠</span>Início
+    </button>
+    <button class="bnav-btn" onclick="ir('viagem-screen')">
+      <div class="bnav-center">+</div>
+    </button>
+    <button class="bnav-btn" onclick="ir('saldo-screen')">
+      <span class="bnav-icon">💰</span>Meu saldo
+    </button>
+  </nav>
+</div>
+
+<!-- ════════ TELA COLETA ════════ -->
+<div class="screen" id="coleta-screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="voltar()">←</button>
+    <div><div class="topbar-title">Registrar coleta</div><div class="topbar-sub">Saída da fábrica</div></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Antes de sair — verifique</div>
+      <div id="checklist-items"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Entregas desta coleta</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Adicione cada entrega separadamente.</p>
+      <div id="entregas-lista"></div>
+      <button class="btn btn-outline btn-sm" onclick="adicionarEntregaForm()" style="margin-top:6px">+ Adicionar entrega</button>
+    </div>
+    <div id="entrega-form-block" style="display:none" class="card">
+      <div class="card-title">Entrega #<span id="entrega-num">1</span></div>
+      <div class="field">
+        <label>Cidade</label>
+        <select id="inp-cidade"><option value="">Escolha a cidade...</option></select>
+      </div>
+      <div class="field">
+        <label>Número da NF</label>
+        <input type="text" id="inp-nf" placeholder="Ex: 000123" inputmode="numeric"/>
+        <span class="hint">Nota Fiscal desta entrega</span>
+      </div>
+      <button class="btn btn-success btn-sm" onclick="confirmarEntregaForm()">Salvar</button>
+    </div>
+    <button class="btn btn-primary" onclick="registrarColeta()">Registrar saída</button>
+  </div>
+</div>
+
+<!-- ════════ TELA ENTREGA ════════ -->
+<div class="screen" id="entrega-screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="voltar()">←</button>
+    <div><div class="topbar-title">Confirmar entrega</div><div class="topbar-sub">Selecione a entrega</div></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Qual entrega você está finalizando?</div>
+      <div id="lista-entregas-pendentes"></div>
+    </div>
+    <div id="entrega-detalhes" style="display:none">
+      <div class="card">
+        <div class="card-title">Foto do canhoto</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Recibo assinado pelo cliente</p>
+        <div class="foto-area">
+          <input type="file" accept="image/*" capture="environment" id="foto-canhoto" onchange="previewFoto(this,'prev-canhoto')"/>
+          <div class="ico">📄</div>
+          <p>Toque para fotografar</p>
+          <img class="foto-preview" id="prev-canhoto"/>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Foto da descarga</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Mostre que o cimento foi entregue</p>
+        <div class="foto-area">
+          <input type="file" accept="image/*" capture="environment" id="foto-descarga" onchange="previewFoto(this,'prev-descarga')"/>
+          <div class="ico">🏗️</div>
+          <p>Toque para fotografar</p>
+          <img class="foto-preview" id="prev-descarga"/>
+        </div>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label>Observação (opcional)</label>
+          <textarea id="inp-obs-entrega" placeholder="Algum problema? Anote aqui..."></textarea>
+        </div>
+      </div>
+      <button class="btn btn-success" onclick="confirmarEntrega()">✓ Confirmar entrega</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ TELA ABASTECIMENTO ════════ -->
+<div class="screen" id="abast-screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="voltar()">←</button>
+    <div><div class="topbar-title">Abastecer</div><div class="topbar-sub">Registrar combustível</div></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="field">
+        <label>KM atual do caminhão</label>
+        <input type="number" id="inp-km" placeholder="Ex: 125000" inputmode="numeric"/>
+        <span class="hint">O número grande no painel</span>
+      </div>
+      <div class="field">
+        <label>Litros abastecidos</label>
+        <input type="number" id="inp-litros" placeholder="Ex: 150" inputmode="decimal" step="0.01" oninput="calcTotal()"/>
+      </div>
+      <div class="field">
+        <label>Preço por litro (R$)</label>
+        <input type="number" id="inp-preco" placeholder="Ex: 6.89" inputmode="decimal" step="0.001" oninput="calcTotal()"/>
+      </div>
+      <div class="total-abast" id="total-abast"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Foto do painel (KM)</div>
+      <div class="foto-area">
+        <input type="file" accept="image/*" capture="environment" id="foto-odometro" onchange="previewFoto(this,'prev-odometro')"/>
+        <div class="ico">🖥️</div>
+        <p>Fotografe o painel mostrando a quilometragem</p>
+        <img class="foto-preview" id="prev-odometro"/>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Foto da bomba de combustível</div>
+      <div class="foto-area">
+        <input type="file" accept="image/*" capture="environment" id="foto-bomba" onchange="previewFoto(this,'prev-bomba')"/>
+        <div class="ico">⛽</div>
+        <p>Fotografe a bomba mostrando litros e valor</p>
+        <img class="foto-preview" id="prev-bomba"/>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="salvarAbastecimento()">Salvar abastecimento</button>
+  </div>
+</div>
+
+<!-- ════════ TELA SALDO ════════ -->
+<div class="screen" id="saldo-screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="voltar()">←</button>
+    <div><div class="topbar-title">Meu saldo</div></div>
+  </div>
+  <div class="content" id="saldo-content">
+    <div class="empty-state"><div class="emo">⏳</div><p>Carregando...</p></div>
+  </div>
+</div>
+
+<!-- ════════ TELA VIAGEM ════════ -->
+<div class="screen" id="viagem-screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="voltar()">←</button>
+    <div><div class="topbar-title">Nova viagem</div><div class="topbar-sub">Dados da carga</div></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Origem</div>
+      <div class="field">
+        <label>Estado</label>
+        <select id="origem-estado" onchange="carregarCidades('origem')"></select>
+      </div>
+      <div class="field">
+        <label>Cidade</label>
+        <select id="origem-cidade" disabled><option>Escolha o estado primeiro</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Destino</div>
+      <div class="field">
+        <label>Estado</label>
+        <select id="destino-estado" onchange="carregarCidades('destino')"></select>
+      </div>
+      <div class="field">
+        <label>Cidade</label>
+        <select id="destino-cidade" disabled><option>Escolha o estado primeiro</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Dados da carga</div>
+      <div class="field">
+        <label>Tipo de carga</label>
+        <select id="inp-tipo-carga">
+          <option value="">Escolha...</option>
+          <option>Cimento</option><option>Grãos</option><option>Frigorificado</option>
+          <option>Carga Geral</option><option>Combustível</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Peso (toneladas)</label>
+        <input type="number" id="inp-peso" placeholder="Ex: 28.5" inputmode="decimal" step="0.1"/>
+      </div>
+      <div class="field">
+        <label>Número do CT-e</label>
+        <input type="text" id="inp-cte" placeholder="Ex: 000456"/>
+        <span class="hint">Documento de transporte</span>
+      </div>
+      <div class="field">
+        <label>Valor do frete (R$)</label>
+        <input type="number" id="inp-frete" placeholder="Ex: 4500.00" inputmode="decimal"/>
+      </div>
+      <div class="field">
+        <label>KM de saída</label>
+        <input type="number" id="inp-km-saida" placeholder="Ex: 210000" inputmode="numeric"/>
+        <span class="hint">Olhe no painel do caminhão</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="salvarViagem()">Iniciar viagem</button>
+  </div>
+</div>
+
+<!-- ════════ ADM ════════ -->
+<div class="screen" id="adm-screen">
+  <div class="home-head">
+    <div class="avatar" style="background:#1A1A1A" id="adm-avatar">DN</div>
+    <div class="head-info">
+      <div class="head-name" id="adm-nome">Danilo</div>
+      <div class="head-sub">Painel ADM</div>
+    </div>
+    <button class="btn-sair" onclick="logout()">⎋</button>
+  </div>
+  <div class="adm-tab">
+    <button class="active" onclick="admTab('hoje')">Hoje</button>
+    <button onclick="admTab('premios')">Prêmios</button>
+    <button onclick="admTab('abast')">Combustível</button>
+  </div>
+  <div class="content" style="padding-bottom:20px">
+    <div id="adm-hoje">
+      <div class="kpi-row2" id="adm-kpis"></div>
+      <div class="card">
+        <div class="card-title">Cimento — coletas de hoje</div>
+        <div id="adm-cimento-list"><div class="empty-state"><div class="emo">⏳</div><p>Carregando...</p></div></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">Carreta — viagens em andamento</div>
+        <div id="adm-carreta-list"><div class="empty-state"><div class="emo">⏳</div><p>Carregando...</p></div></div>
+      </div>
+    </div>
+    <div id="adm-premios" style="display:none">
+      <div class="card">
+        <div class="card-title">Prêmios pendentes</div>
+        <div id="adm-premios-list"></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">Pagamento do sábado</div>
+        <div id="adm-sabado-list"></div>
+        <button class="btn btn-success" style="margin-top:14px" onclick="pagarPremiosSabado()">💰 Marcar como pago (sábado)</button>
+      </div>
+    </div>
+    <div id="adm-abast" style="display:none">
+      <div class="card">
+        <div class="card-title">Últimos abastecimentos</div>
+        <div id="adm-abast-list"><div class="empty-state"><div class="emo">⏳</div><p>Carregando...</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+</div><!-- /wrap -->
+
+<script>
+// ════ SUPABASE ════
+const SB_URL = 'https://ntbnifntwkxiucjflzcu.supabase.co';
+const SB_KEY = 'sb_publishable_9FxS17PJz5meMcxDgVNVfg_93jcoWoK';
+
+async function sb(endpoint, method='GET', body=null){
+  const h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+  if(method==='POST') h['Prefer']='return=representation';
+  const r=await fetch(SB_URL+'/rest/v1/'+endpoint,{method,headers:h,body:body?JSON.stringify(body):null});
+  const txt=await r.text();
+  if(!r.ok) throw new Error(txt);
+  return txt?JSON.parse(txt):[];
+}
+async function sbUp(bucket,path,file){
+  const r=await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`,{
+    method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':file.type,'x-upsert':'true'},body:file
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return `${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
+}
+
+// ════ ESTADO ════
+let user=null, coletaAtiva=null, entregaSelecionada=null, entregasTemp=[], stack=[];
+
+// ════ NAVEGAÇÃO ════
+function ir(id,push=true){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(push) stack.push(id);
+  window.scrollTo(0,0);
+  if(id==='entrega-screen') renderEntregasPendentes();
+  if(id==='saldo-screen') carregarSaldo();
+  if(id==='adm-screen') carregarAdm();
+  if(id==='viagem-screen') iniciarViagem();
+  if(id==='coleta-screen') iniciarColeta();
+  if(id==='abast-screen') pegarUltimoKm();
+}
+function voltar(){
+  stack.pop();
+  const ant=stack[stack.length-1]||homeId();
+  ir(ant,false);
+}
+function irHome(){
+  stack=[];
+  ir(homeId(),false);
+  stack=[homeId()];
+}
+function homeId(){
+  if(!user) return 'login-screen';
+  if(user.perfil==='adm') return 'adm-screen';
+  if(user.perfil==='carreta') return 'home-carreta';
+  return 'home-cimento';
+}
+
+// ════ LOGIN ════
+async function fazerLogin(){
+  const nome=document.getElementById('inp-nome').value.trim().toLowerCase();
+  const senha=document.getElementById('inp-senha').value.trim();
+  if(!nome||!senha){toast('Preencha usuário e senha','error');return;}
+  loading(true);
+  try{
+    const res=await sb(`usuarios?nome=eq.${encodeURIComponent(nome)}&senha=eq.${encodeURIComponent(senha)}&ativo=eq.true&select=*`);
+    document.getElementById('login-erro').style.display=res.length?'none':'block';
+    if(res.length){
+      user=res[0];
+      stack=[];
+      if(user.perfil==='cimento'){
+        const ini=user.nome.charAt(0).toUpperCase();
+        const ini2=(user.nome.length>1?user.nome.charAt(1):'').toUpperCase();
+        document.getElementById('home-avatar').textContent=ini+ini2;
+        document.getElementById('home-nome').textContent=cap(user.nome);
+        document.getElementById('home-placa').textContent='Caminhão: '+(user.placa||'—');
+        await atualizarKpisCimento();
+        await verificarColetaAtiva();
+      }
+      if(user.perfil==='carreta'){
+        const ini=user.nome.substring(0,2).toUpperCase();
+        document.getElementById('carreta-avatar').textContent=ini;
+        document.getElementById('carreta-nome').textContent=cap(user.nome);
+        await atualizarKpisCarreta();
+      }
+      if(user.perfil==='adm'){
+        const ini=user.nome.substring(0,2).toUpperCase();
+        document.getElementById('adm-avatar').textContent=ini;
+        document.getElementById('adm-nome').textContent=cap(user.nome);
+      }
+      const h=homeId();
+      ir(h,false);
+      stack=[h];
+    }
+  }catch(e){toast('Erro de conexão. Tente novamente.','error');}
+  loading(false);
+}
+function logout(){user=null;coletaAtiva=null;entregasTemp=[];stack=[];ir('login-screen',false);document.getElementById('inp-nome').value='';document.getElementById('inp-senha').value='';}
+
+// ════ CIMENTO — KPIs ════
+async function atualizarKpisCimento(){
+  try{
+    const hoje=dHoje(), mes=dHoje().substring(0,7);
+    const [ch,cm]=await Promise.all([
+      sb(`coletas?motorista_id=eq.${user.id}&data_coleta=eq.${hoje}&select=id`),
+      sb(`coletas?motorista_id=eq.${user.id}&data_coleta=gte.${mes}-01&select=id`)
+    ]);
+    document.getElementById('kpi-hoje').textContent=ch.length;
+    document.getElementById('kpi-mes').textContent=cm.length;
+    const lbl=document.getElementById('kpi-premio-label');
+    if(ch.length>=2){lbl.textContent='🏆 Prêmio garantido!';lbl.style.color='var(--primary)';}
+    else if(ch.length===1){lbl.textContent='Falta 1 coleta';lbl.style.color='#92400E';}
+    else{lbl.textContent='';};
+  }catch(e){}
+}
+async function atualizarKpisCarreta(){
+  try{
+    const mes=dHoje().substring(0,7);
+    const [vm,va]=await Promise.all([
+      sb(`viagens?motorista_id=eq.${user.id}&data_saida=gte.${mes}-01T00:00:00&select=id`),
+      sb(`viagens?motorista_id=eq.${user.id}&status=eq.em_andamento&select=id`)
+    ]);
+    document.getElementById('kpi-viagens').textContent=vm.length;
+    document.getElementById('kpi-viagens-and').textContent=va.length;
+  }catch(e){}
+}
+
+// ════ COLETA ATIVA ════
+async function verificarColetaAtiva(){
+  const res=await sb(`coletas?motorista_id=eq.${user.id}&data_coleta=eq.${dHoje()}&status=eq.em_andamento&select=*`);
+  coletaAtiva=res[0]||null;
+  const bar=document.getElementById('status-coleta');
+  const info=document.getElementById('status-info');
+  const badge=document.getElementById('badge-entrega');
+  if(coletaAtiva){
+    const pend=(coletaAtiva.entregas||[]).filter(e=>e.status==='pendente').length;
+    bar.style.display='block';
+    info.textContent=`${(coletaAtiva.entregas||[]).length} entrega(s) · ${pend} pendente(s)`;
+    if(pend>0){badge.style.display='inline-block';badge.textContent=pend;}
+    else badge.style.display='none';
+  }else{bar.style.display='none';badge.style.display='none';}
+}
+
+// ════ TELA COLETA ════
+const CIDADES=[
+  'Brasília/DF','Taguatinga/DF','Ceilândia/DF','Gama/DF','Samambaia/DF',
+  'Planaltina/DF','Sobradinho/DF','Santa Maria/DF','Recanto das Emas/DF',
+  'Riacho Fundo/DF','Lago Sul/DF','Lago Norte/DF','Guará/DF','Águas Claras/DF',
+  'Luziânia/GO','Valparaíso de Goiás/GO','Novo Gama/GO','Cidade Ocidental/GO',
+  'Formosa/GO','Planaltina de Goiás/GO','Santo Antônio do Descoberto/GO',
+  'Alexânia/GO','Cristalina/GO','Padre Bernardo/GO'
+];
+const CHK=[
+  {id:'docs',l:'Documentos em ordem',d:'CNH, CRLV e Tacógrafo'},
+  {id:'lacre',l:'Carga lacrada',d:'Lacre intacto'},
+  {id:'pneus',l:'Pneus e freios OK',d:'Bateu os pneus, freio funcionando'},
+  {id:'ciot',l:'CIOT/MDF-e gerado',d:'Documento eletrônico emitido'},
+];
+let chk={};
+function iniciarColeta(){
+  entregasTemp=[];
+  chk={};CHK.forEach(i=>chk[i.id]=false);
+  document.getElementById('checklist-items').innerHTML=CHK.map(i=>`
+    <div class="check-item" onclick="tglChk('${i.id}')">
+      <div class="check-box" id="chk-${i.id}">✓</div>
+      <div><div class="check-label">${i.l}</div><div class="check-desc">${i.d}</div></div>
+    </div>`).join('');
+  CHK.forEach(i=>{document.getElementById(`chk-${i.id}`).style.color='transparent';});
+  const sel=document.getElementById('inp-cidade');
+  sel.innerHTML='<option value="">Escolha a cidade...</option>';
+  CIDADES.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  renderEntregasTemp();
+  document.getElementById('entrega-form-block').style.display='none';
+}
+function tglChk(id){
+  chk[id]=!chk[id];
+  const el=document.getElementById(`chk-${id}`);
+  el.classList.toggle('checked',chk[id]);
+  el.style.color=chk[id]?'#fff':'transparent';
+}
+function adicionarEntregaForm(){
+  document.getElementById('inp-cidade').value='';
+  document.getElementById('inp-nf').value='';
+  document.getElementById('entrega-num').textContent=entregasTemp.length+1;
+  document.getElementById('entrega-form-block').style.display='block';
+  document.getElementById('inp-cidade').scrollIntoView({behavior:'smooth'});
+}
+function confirmarEntregaForm(){
+  const cidade=document.getElementById('inp-cidade').value;
+  const nf=document.getElementById('inp-nf').value.trim();
+  if(!cidade){toast('Escolha a cidade','error');return;}
+  if(!nf){toast('Informe o número da NF','error');return;}
+  entregasTemp.push({cidade,nf,status:'pendente'});
+  document.getElementById('entrega-form-block').style.display='none';
+  renderEntregasTemp();
+}
+function renderEntregasTemp(){
+  const el=document.getElementById('entregas-lista');
+  if(!entregasTemp.length){el.innerHTML='<p style="font-size:13px;color:var(--text2)">Nenhuma entrega adicionada.</p>';return;}
+  el.innerHTML=entregasTemp.map(e=>`<div class="entrega-item"><div class="ei-title">📍 ${e.cidade}</div><div class="ei-info">NF: ${e.nf}</div></div>`).join('');
+}
+async function registrarColeta(){
+  if(!entregasTemp.length){toast('Adicione pelo menos uma entrega','error');return;}
+  loading(true);
+  try{
+    const res=await sb('coletas','POST',{
+      motorista_id:user.id,motorista_nome:user.nome,placa:user.placa||null,
+      data_coleta:dHoje(),hora_coleta:hAgora(),
+      checklist_docs:chk.docs,checklist_lacre:chk.lacre,checklist_pneus:chk.pneus,checklist_ciot:chk.ciot,
+      entregas:entregasTemp,status:'em_andamento'
+    });
+    coletaAtiva=res[0];
+    await verificarPremio();
+    await atualizarKpisCimento();
+    await verificarColetaAtiva();
+    toast('Coleta registrada! ✓','success');
+    voltar();
+  }catch(e){toast('Erro ao salvar coleta','error');console.error(e);}
+  loading(false);
+}
+async function verificarPremio(){
+  const res=await sb(`coletas?motorista_id=eq.${user.id}&data_coleta=eq.${dHoje()}&select=id`);
+  if(res.length>=2){
+    const pres=await sb(`premios?motorista_id=eq.${user.id}&data_referencia=eq.${dHoje()}&select=id`);
+    if(!pres.length){
+      await sb('premios','POST',{motorista_id:user.id,motorista_nome:user.nome,data_referencia:dHoje(),valor:80.00,pago:false});
+      setTimeout(()=>toast('🏆 Prêmio de R$80 gerado! Pago no sábado.','success'),800);
+    }
+  }
+}
+
+// ════ ENTREGA ════
+function irEntregas(){
+  if(!coletaAtiva){toast('Sem coleta em andamento. Faça uma coleta primeiro.','error');return;}
+  ir('entrega-screen');
+}
+function renderEntregasPendentes(){
+  const lista=document.getElementById('lista-entregas-pendentes');
+  if(!coletaAtiva){lista.innerHTML='<div class="empty-state"><div class="emo">📦</div><p>Faça uma coleta primeiro.</p></div>';document.getElementById('entrega-detalhes').style.display='none';return;}
+  const pend=(coletaAtiva.entregas||[]).filter(e=>e.status==='pendente');
+  if(!pend.length){lista.innerHTML='<div class="empty-state"><div class="emo">✅</div><p>Todas as entregas confirmadas!</p></div>';document.getElementById('entrega-detalhes').style.display='none';return;}
+  lista.innerHTML=pend.map((e,i)=>`<div class="coleta-card" onclick="selEntrega(${i},'${e.cidade}','${e.nf}')"><div class="cc-title">📍 ${e.cidade}</div><div class="cc-info">NF: ${e.nf}</div></div>`).join('');
+  document.getElementById('entrega-detalhes').style.display='none';
+}
+function selEntrega(idx,cidade,nf){
+  entregaSelecionada={idx,cidade,nf};
+  document.querySelectorAll('.coleta-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.coleta-card')[idx].classList.add('selected');
+  document.getElementById('entrega-detalhes').style.display='block';
+  document.getElementById('entrega-detalhes').scrollIntoView({behavior:'smooth'});
+}
+async function confirmarEntrega(){
+  if(!entregaSelecionada){toast('Selecione uma entrega','error');return;}
+  loading(true);
+  try{
+    let fc='',fd='';
+    const f1=document.getElementById('foto-canhoto').files[0];
+    const f2=document.getElementById('foto-descarga').files[0];
+    const ts=Date.now();
+    if(f1) fc=await sbUp('fotos',`canhotos/${coletaAtiva.id}_${ts}.jpg`,f1);
+    if(f2) fd=await sbUp('fotos',`descargas/${coletaAtiva.id}_${ts}.jpg`,f2);
+    const entregas=[...(coletaAtiva.entregas||[])];
+    const pIdx=entregas.reduce((a,e,i)=>{if(e.status==='pendente')a.push(i);return a;},[]);
+    const ri=pIdx[entregaSelecionada.idx];
+    entregas[ri]={...entregas[ri],status:'entregue',hora_entrega:hAgora(),foto_canhoto:fc,foto_descarga:fd,observacao:document.getElementById('inp-obs-entrega').value};
+    const todas=entregas.every(e=>e.status==='entregue');
+    await sb(`coletas?id=eq.${coletaAtiva.id}`,'PATCH',{entregas,status:todas?'entregue':'em_andamento'});
+    coletaAtiva.entregas=entregas;
+    if(todas){coletaAtiva=null;}
+    await verificarColetaAtiva();
+    await atualizarKpisCimento();
+    entregaSelecionada=null;
+    ['foto-canhoto','foto-descarga'].forEach(id=>document.getElementById(id).value='');
+    ['prev-canhoto','prev-descarga'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('inp-obs-entrega').value='';
+    toast('Entrega confirmada! ✓','success');
+    renderEntregasPendentes();
+  }catch(e){toast('Erro ao confirmar entrega','error');console.error(e);}
+  loading(false);
+}
+
+// ════ ABASTECIMENTO ════
+async function pegarUltimoKm(){
+  if(!user)return;
+  try{
+    const r=await sb(`abastecimentos?motorista_id=eq.${user.id}&order=criado_em.desc&limit=1&select=km_atual`);
+    if(r.length) document.getElementById('inp-km').placeholder=`Último: ${r[0].km_atual} km`;
+  }catch(e){}
+}
+function calcTotal(){
+  const l=parseFloat(document.getElementById('inp-litros').value)||0;
+  const p=parseFloat(document.getElementById('inp-preco').value)||0;
+  const el=document.getElementById('total-abast');
+  if(l>0&&p>0){el.style.display='block';el.textContent=`Total: R$ ${(l*p).toFixed(2)}`;}
+  else el.style.display='none';
+}
+async function salvarAbastecimento(){
+  const km=parseInt(document.getElementById('inp-km').value);
+  const lit=parseFloat(document.getElementById('inp-litros').value);
+  const preco=parseFloat(document.getElementById('inp-preco').value);
+  if(!km||!lit||!preco){toast('Preencha KM, litros e preço','error');return;}
+  loading(true);
+  try{
+    let fo='',fb='';
+    const ts=Date.now();
+    const f1=document.getElementById('foto-odometro').files[0];
+    const f2=document.getElementById('foto-bomba').files[0];
+    if(f1) fo=await sbUp('fotos',`odometros/${user.id}_${ts}.jpg`,f1);
+    if(f2) fb=await sbUp('fotos',`bombas/${user.id}_${ts}.jpg`,f2);
+    const ult=await sb(`abastecimentos?motorista_id=eq.${user.id}&order=criado_em.desc&limit=1&select=km_atual`);
+    const kmd=ult.length?km-ult[0].km_atual:null;
+    await sb('abastecimentos','POST',{motorista_id:user.id,motorista_nome:user.nome,placa:user.placa||null,operacao:user.perfil==='carreta'?'carreta':'cimento',data_abast:dHoje(),hora_abast:hAgora(),km_atual:km,litros:lit,preco_litro:preco,tipo_diesel:'S10',foto_bomba:fb,foto_odometro:fo,km_desde_ultimo:kmd});
+    ['inp-km','inp-litros','inp-preco'].forEach(id=>document.getElementById(id).value='');
+    ['foto-odometro','foto-bomba'].forEach(id=>document.getElementById(id).value='');
+    ['prev-odometro','prev-bomba'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('total-abast').style.display='none';
+    toast('Abastecimento salvo! ⛽','success');
+    voltar();
+  }catch(e){toast('Erro ao salvar','error');console.error(e);}
+  loading(false);
+}
+
+// ════ SALDO ════
+async function carregarSaldo(){
+  if(!user)return;
+  const el=document.getElementById('saldo-content');
+  el.innerHTML='<div class="empty-state"><div class="emo">⏳</div><p>Carregando...</p></div>';
+  try{
+    const [prem,col]=await Promise.all([
+      sb(`premios?motorista_id=eq.${user.id}&order=data_referencia.desc&limit=30&select=*`),
+      sb(`coletas?motorista_id=eq.${user.id}&data_coleta=eq.${dHoje()}&select=id`)
+    ]);
+    const pend=prem.filter(p=>!p.pago);
+    const pagos=prem.filter(p=>p.pago);
+    const tot=pend.reduce((a,p)=>a+parseFloat(p.valor),0);
+    const hoje=col.length;
+    const temHoje=pend.some(p=>p.data_referencia===dHoje());
+    el.innerHTML=`
+      <div class="card">
+        <div class="card-title">Hoje</div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div><div style="font-size:32px;font-weight:900">${hoje}</div><div style="font-size:12px;color:var(--text2)">coletas hoje</div></div>
+          <div style="margin-left:auto">${temHoje?'<span class="tag green">🏆 R$80 garantido!</span>':hoje===1?'<span class="tag" style="color:#92400E;background:#FEF3C7">Falta 1 coleta</span>':'<span class="tag">Sem prêmio ainda</span>'}</div>
+        </div>
+        <div style="margin-top:10px;font-size:13px;color:var(--text2)">2 coletas no dia = R$80 de prêmio, pago todo sábado pelo Douglas.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">A receber</div>
+        <div class="saldo-valor">R$ ${tot.toFixed(2)}</div>
+        <div style="font-size:13px;color:var(--text2)">${pend.length} dia(s) premiado(s) aguardando pagamento</div>
+        ${pend.slice(0,5).map(p=>`<div class="driver-row"><div class="driver-name">${p.data_referencia}</div><div class="driver-badge badge-ok">R$ ${parseFloat(p.valor).toFixed(2)}</div></div>`).join('')}
+      </div>
+      ${pagos.length?`<div class="card"><div class="card-title">Já recebido</div>${pagos.slice(0,5).map(p=>`<div class="driver-row"><div><div class="driver-name">${p.data_referencia}</div><div class="driver-info">Pago em ${p.data_pagamento||'—'}</div></div><div class="driver-badge badge-no">R$ ${parseFloat(p.valor).toFixed(2)}</div></div>`).join('')}</div>`:''}
+    `;
+  }catch(e){el.innerHTML='<div class="empty-state"><div class="emo">❌</div><p>Erro ao carregar. Tente novamente.</p></div>';}
+}
+
+// ════ VIAGEM ════
+const ESTADOS=[{uf:'AC',n:'Acre'},{uf:'AL',n:'Alagoas'},{uf:'AP',n:'Amapá'},{uf:'AM',n:'Amazonas'},{uf:'BA',n:'Bahia'},{uf:'CE',n:'Ceará'},{uf:'DF',n:'Distrito Federal'},{uf:'ES',n:'Espírito Santo'},{uf:'GO',n:'Goiás'},{uf:'MA',n:'Maranhão'},{uf:'MT',n:'Mato Grosso'},{uf:'MS',n:'Mato Grosso do Sul'},{uf:'MG',n:'Minas Gerais'},{uf:'PA',n:'Pará'},{uf:'PB',n:'Paraíba'},{uf:'PR',n:'Paraná'},{uf:'PE',n:'Pernambuco'},{uf:'PI',n:'Piauí'},{uf:'RJ',n:'Rio de Janeiro'},{uf:'RN',n:'Rio Grande do Norte'},{uf:'RS',n:'Rio Grande do Sul'},{uf:'RO',n:'Rondônia'},{uf:'RR',n:'Roraima'},{uf:'SC',n:'Santa Catarina'},{uf:'SP',n:'São Paulo'},{uf:'SE',n:'Sergipe'},{uf:'TO',n:'Tocantins'}];
+function iniciarViagem(){
+  ['origem-estado','destino-estado'].forEach(id=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML='<option value="">Estado...</option>';
+    ESTADOS.forEach(e=>{const o=document.createElement('option');o.value=e.uf;o.textContent=e.n;sel.appendChild(o);});
+  });
+  document.getElementById('origem-estado').value='GO';
+  carregarCidades('origem');
+}
+async function carregarCidades(lado){
+  const uf=document.getElementById(`${lado}-estado`).value;
+  const sel=document.getElementById(`${lado}-cidade`);
+  if(!uf){sel.disabled=true;sel.innerHTML='<option>Escolha o estado</option>';return;}
+  sel.disabled=true;sel.innerHTML='<option>Carregando...</option>';
+  try{
+    const r=await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`);
+    const cidades=await r.json();
+    sel.innerHTML='<option value="">Cidade...</option>';
+    cidades.forEach(c=>{const o=document.createElement('option');o.value=c.nome;o.textContent=c.nome;sel.appendChild(o);});
+    sel.disabled=false;
+    if(lado==='origem'&&uf==='GO') sel.value='Goiânia';
+  }catch(e){sel.innerHTML='<option>Erro</option>';}
+}
+async function salvarViagem(){
+  const oe=document.getElementById('origem-estado').value,oc=document.getElementById('origem-cidade').value;
+  const de=document.getElementById('destino-estado').value,dc=document.getElementById('destino-cidade').value;
+  const cte=document.getElementById('inp-cte').value.trim();
+  const frete=parseFloat(document.getElementById('inp-frete').value);
+  const km=parseInt(document.getElementById('inp-km-saida').value);
+  if(!oe||!oc||!de||!dc){toast('Preencha origem e destino','error');return;}
+  if(!cte){toast('Informe o CT-e','error');return;}
+  if(!frete){toast('Informe o valor do frete','error');return;}
+  if(!km){toast('Informe o KM de saída','error');return;}
+  loading(true);
+  try{
+    await sb('viagens','POST',{motorista_id:user.id,motorista_nome:user.nome,origem_estado:oe,origem_cidade:oc,destino_estado:de,destino_cidade:dc,tipo_carga:document.getElementById('inp-tipo-carga').value,peso_kg:parseFloat(document.getElementById('inp-peso').value)||null,cte_numero:cte,valor_frete:frete,km_saida:km,status:'em_andamento'});
+    toast('Viagem iniciada! 🛣️','success');
+    await atualizarKpisCarreta();
+    voltar();
+  }catch(e){toast('Erro ao salvar viagem','error');console.error(e);}
+  loading(false);
+}
+
+// ════ ADM ════
+let admAtual='hoje';
+function admTab(t){
+  admAtual=t;
+  ['hoje','premios','abast'].forEach(x=>document.getElementById(`adm-${x}`).style.display=x===t?'block':'none');
+  document.querySelectorAll('.adm-tab button').forEach((b,i)=>b.classList.toggle('active',['hoje','premios','abast'][i]===t));
+  if(t==='hoje') carregarAdmHoje();
+  if(t==='premios') carregarAdmPremios();
+  if(t==='abast') carregarAdmAbast();
+}
+async function carregarAdm(){admTab('hoje');}
+async function carregarAdmHoje(){
+  try{
+    const [col,via]=await Promise.all([
+      sb(`coletas?data_coleta=eq.${dHoje()}&select=*`),
+      sb(`viagens?status=eq.em_andamento&select=*`)
+    ]);
+    const premHoje=new Set(col.filter((c,_,a)=>a.filter(x=>x.motorista_id===c.motorista_id).length>=2).map(c=>c.motorista_id)).size;
+    document.getElementById('adm-kpis').innerHTML=`
+      <div class="kpi2"><div class="kv">${col.length}</div><div class="kl">Coletas hoje</div></div>
+      <div class="kpi2"><div class="kv">${premHoje}</div><div class="kl">Prêmios gerados</div></div>
+      <div class="kpi2"><div class="kv">${via.length}</div><div class="kl">Carretas em rota</div></div>
+      <div class="kpi2"><div class="kv">${col.filter(c=>c.status==='em_andamento').length}</div><div class="kl">Coletas abertas</div></div>`;
+    const ec=document.getElementById('adm-cimento-list');
+    if(!col.length){ec.innerHTML='<div class="empty-state"><div class="emo">📦</div><p>Sem coletas hoje</p></div>';}
+    else{
+      const pm={};col.forEach(c=>{if(!pm[c.motorista_nome])pm[c.motorista_nome]=[];pm[c.motorista_nome].push(c);});
+      ec.innerHTML=Object.entries(pm).map(([n,cs])=>{
+        const ent=cs.flatMap(c=>c.entregas||[]);
+        const entOk=ent.filter(e=>e.status==='entregue').length;
+        return `<div class="driver-row"><div><div class="driver-name">${cap(n)}${cs.length>=2?'<span class="premio-tag">🏆 +R$80</span>':''}</div><div class="driver-info">${cs.length} coleta(s) · ${entOk}/${ent.length} entregas</div></div><div class="driver-badge ${cs.length>=2?'badge-ok':cs.length===1?'badge-pend':'badge-no'}">${cs.length}</div></div>`;
+      }).join('');}
+    const ev=document.getElementById('adm-carreta-list');
+    if(!via.length){ev.innerHTML='<div class="empty-state"><div class="emo">🛣️</div><p>Sem viagens em andamento</p></div>';}
+    else{ev.innerHTML=via.map(v=>`<div class="driver-row"><div><div class="driver-name">${cap(v.motorista_nome)}</div><div class="driver-info">${v.origem_cidade}→${v.destino_cidade} · CT-e ${v.cte_numero}</div></div><span class="tag blue">Em rota</span></div>`).join('');}
+  }catch(e){console.error(e);}
+}
+async function carregarAdmPremios(){
+  try{
+    const prem=await sb(`premios?pago=eq.false&order=data_referencia.desc&select=*`);
+    const el=document.getElementById('adm-premios-list');
+    if(!prem.length){el.innerHTML='<div class="empty-state"><div class="emo">✅</div><p>Sem prêmios pendentes</p></div>';}
+    else{
+      const pm={};prem.forEach(p=>{if(!pm[p.motorista_nome])pm[p.motorista_nome]=[];pm[p.motorista_nome].push(p);});
+      el.innerHTML=Object.entries(pm).map(([n,ps])=>{const t=ps.reduce((a,p)=>a+parseFloat(p.valor),0);return `<div class="driver-row"><div><div class="driver-name">${cap(n)}</div><div class="driver-info">${ps.length} dia(s) premiado(s)</div></div><div class="driver-badge badge-ok">R$ ${t.toFixed(2)}</div></div>`;}).join('');}
+    const semana=prem.filter(p=>new Date(p.data_referencia)>=new Date(semAtu()));
+    const sel=document.getElementById('adm-sabado-list');
+    if(!semana.length){sel.innerHTML='<p style="font-size:13px;color:var(--text2)">Nenhum prêmio esta semana.</p>';}
+    else{const pm={};semana.forEach(p=>{if(!pm[p.motorista_nome])pm[p.motorista_nome]=0;pm[p.motorista_nome]+=parseFloat(p.valor);});sel.innerHTML=Object.entries(pm).map(([n,v])=>`<div class="driver-row"><div class="driver-name">${cap(n)}</div><div class="driver-badge badge-ok">R$ ${v.toFixed(2)}</div></div>`).join('');}
+  }catch(e){console.error(e);}
+}
+async function pagarPremiosSabado(){
+  if(!confirm('Marcar todos os prêmios da semana como pagos?'))return;
+  loading(true);
+  try{await sb(`premios?pago=eq.false`,'PATCH',{pago:true,data_pagamento:dHoje()});toast('Prêmios marcados como pagos! 💰','success');carregarAdmPremios();}
+  catch(e){toast('Erro','error');}
+  loading(false);
+}
+async function carregarAdmAbast(){
+  try{
+    const r=await sb(`abastecimentos?order=criado_em.desc&limit=20&select=*`);
+    const el=document.getElementById('adm-abast-list');
+    if(!r.length){el.innerHTML='<div class="empty-state"><div class="emo">⛽</div><p>Sem registros</p></div>';return;}
+    el.innerHTML=r.map(a=>`<div class="driver-row"><div><div class="driver-name">${cap(a.motorista_nome)} · ${a.data_abast}</div><div class="driver-info">${a.litros}L · R$${parseFloat(a.preco_litro).toFixed(3)}/L · KM ${a.km_atual}${a.km_desde_ultimo?' · +'+a.km_desde_ultimo+'km':''}</div></div><div class="driver-badge badge-ok">R$ ${(a.litros*a.preco_litro).toFixed(2)}</div></div>`).join('');
+  }catch(e){console.error(e);}
+}
+
+// ════ UTILS ════
+function previewFoto(input,id){const prev=document.getElementById(id);if(input.files&&input.files[0]){prev.src=URL.createObjectURL(input.files[0]);prev.style.display='block';}}
+function loading(s){document.getElementById('loading').style.display=s?'flex':'none';}
+let _tt;function toast(msg,tipo=''){clearTimeout(_tt);const el=document.getElementById('toast');el.textContent=msg;el.className='toast show'+(tipo?' '+tipo:'');_tt=setTimeout(()=>el.className='toast',3000);}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+function dHoje(){return new Date().toLocaleDateString('sv-SE');}
+function hAgora(){return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function semAtu(){const d=new Date();const dia=d.getDay();const diff=d.getDate()-dia+(dia===0?-6:1);return new Date(d.setDate(diff)).toLocaleDateString('sv-SE');}
+
+document.getElementById('inp-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+document.getElementById('inp-nome').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inp-senha').focus();});
+</script>
+</body>
+</html>
