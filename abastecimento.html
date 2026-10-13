@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Abastecimento Varlopex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: barra de abas fixa no topo; Lançamentos = formulário + lista; Controle = grade de placas + ficha da placa */
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --sunk:#E7EBE9; --line:#D3DAD6;
+  --fg:#18211D; --muted:#5D6B64; --accent:#1F6B4F; --accent-ink:#FFFFFF; --accent-soft:#DCEDE4;
+  --ok:#22774F; --ok-soft:#DDF0E5; --warn:#A35F00; --warn-soft:#FBEBD2; --bad:#B3261E; --bad-soft:#F8DEDB;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815; --surface:#1A221E; --sunk:#232D28; --line:#33403A;
+  --fg:#E6ECE9; --muted:#9AA8A1; --accent:#5FBF92; --accent-ink:#0E1A14; --accent-soft:#1F3A2D;
+  --ok:#6CCB99; --ok-soft:#1D3A2B; --warn:#E8A84A; --warn-soft:#3D2E15; --bad:#F08B83; --bad-soft:#47201D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815; --surface:#1A221E; --sunk:#232D28; --line:#33403A;
+  --fg:#E6ECE9; --muted:#9AA8A1; --accent:#5FBF92; --accent-ink:#0E1A14; --accent-soft:#1F3A2D;
+  --ok:#6CCB99; --ok-soft:#1D3A2B; --warn:#E8A84A; --warn-soft:#3D2E15; --bad:#F08B83; --bad-soft:#47201D; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.num,td.n,.big{font-variant-numeric:tabular-nums}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:10px 16px 0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 24px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:uppercase;padding-bottom:10px}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px;letter-spacing:.04em;color:var(--muted);text-transform:none}
+nav.tabs{display:flex;gap:4px}
+nav.tabs button{font:600 15px var(--f-body);color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav.tabs button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{margin-left:auto;font-size:12px;color:var(--muted);padding-bottom:12px}
+main{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:18px 48px}
+h2{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase;letter-spacing:.03em;margin:0 0 10px;text-wrap:balance}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.grid-l{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.grid-l{grid-template-columns:minmax(0,1fr)}}
+.day{border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--sunk)}
+.day.fixo{background:var(--accent-soft)}
+.day b{font-family:var(--f-display);font-size:18px;text-transform:uppercase;letter-spacing:.02em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 13px var(--f-body);border-radius:999px;padding:4px 10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.chip.done{background:var(--ok-soft);border-color:transparent;color:var(--ok);cursor:default}
+form .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;min-width:0}
+.f input,.f select,.f textarea{font:500 15px var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+.f .hint{font-size:12px;color:var(--muted)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg label{flex:1;text-align:center;padding:8px 6px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);background:var(--bg)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--accent);color:var(--accent-ink)}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.calc{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin:-4px 0 12px}
+.note{border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:12px}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.note.bad{background:var(--bad-soft);color:var(--bad)}
+.note.ok{background:var(--ok-soft);color:var(--ok)}
+.btn{font:600 15px var(--f-body);border:0;border-radius:8px;padding:11px 16px;cursor:pointer;background:var(--accent);color:var(--accent-ink);width:100%}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn.ghost{background:var(--sunk);color:var(--fg);width:auto}
+.btn.sm{padding:6px 10px;font-size:13px;width:auto}
+.btn.danger{background:var(--bad);color:#fff}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.bar select{font:500 14px var(--f-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--sunk)}
+td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right}
+.placa{font-family:var(--f-display);font-weight:700;letter-spacing:.06em;font-size:16px}
+.tag{display:inline-block;font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;margin:1px 3px 1px 0;white-space:nowrap}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.neu{background:var(--sunk);color:var(--muted)}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:18px}
+.sum div{background:var(--surface);padding:12px 14px}
+.big{font-family:var(--f-display);font-weight:600;font-size:28px;line-height:1.1}
+@media (max-width:620px){.sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;text-align:left;font:inherit;color:inherit;display:flex;flex-direction:column;gap:10px}
+.card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card .hd{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card .who{font-size:13px;color:var(--muted)}
+.plate{font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.08em;border:2px solid var(--fg);border-radius:5px;padding:0 7px;line-height:1.25}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.kv .v{font-family:var(--f-display);font-weight:600;font-size:20px}
+.alerts{display:flex;flex-wrap:wrap;gap:4px;min-height:20px}
+.ficha{margin-top:4px}
+.ficha-hd{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:12px}
+svg.spark{width:100%;height:90px;display:block}
+.del{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;text-decoration:underline;padding:0}
+.cfg{margin-top:18px}
+.cfg .dias{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.cfg .dias label{display:flex;gap:5px;align-items:center;font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+.inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cin{font:500 14px var(--f-body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:100%;min-width:120px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:20}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+<style>html,body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">Abastecimento<small>Varlopex Logística · controle de diesel</small></div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tab-lan" aria-selected="true" onclick="aba('lan')">Lançamentos</button>
+      <button role="tab" id="tab-con" aria-selected="false" onclick="aba('con')">Controle por placa</button>
+    </nav>
+    <div class="status" id="status">Conectando…</div>
+  </div>
+</header>
+
+<main>
+<!-- ===== LANÇAMENTOS ===== -->
+<section id="v-lan">
+  <div class="day" id="day"></div>
+  <div class="grid-l">
+    <div class="panel">
+      <h2 id="f-titulo">Novo lançamento</h2>
+      <div id="f-edit-aviso" class="note warn" hidden></div>
+      <form id="form" autocomplete="off">
+        <div class="row">
+          <div class="f"><label class="lbl" for="f-data">Data</label><input type="date" id="f-data" required></div>
+          <div class="f"><label class="lbl" for="f-placa">Placa</label><select id="f-placa" required></select></div>
+        </div>
+        <div class="f" style="margin-top:-6px"><span class="hint" id="f-placa-info">&nbsp;</span></div>
+        <div class="row">
+          <div class="f"><label class="lbl" for="f-km">Hodômetro (km)</label><input type="number" inputmode="numeric" id="f-km" min="0" step="1" required></div>
+          <div class="f"><label class="lbl" for="f-litros">Litros</label><input type="number" inputmode="decimal" id="f-litros" min="0" step="0.01" required></div>
+        </div>
+        <div class="row">
+          <div class="f"><label class="lbl" for="f-valor">Valor total (R$)</label><input type="number" inputmode="decimal" id="f-valor" min="0" step="0.01" required></div>
+          <div class="f"><label class="lbl" for="f-posto">Posto</label><input type="text" id="f-posto" placeholder="Nome do posto"></div>
+        </div>
+        <div class="calc"><span id="c-preco">R$/L —</span><span id="c-rod">Rodou — km desde o último</span></div>
+        <div class="f"><span class="lbl">Completou o tanque?</span>
+          <div class="seg"><label><input type="radio" name="cheio" id="f-cheio-s" value="s" checked>Sim, tanque cheio</label><label><input type="radio" name="cheio" id="f-cheio-n" value="n">Não, parcial</label></div>
+        </div>
+        <div class="f"><span class="lbl">Pagamento</span>
+          <div class="seg"><label><input type="radio" name="pag" id="f-pag-posto" value="posto" checked>Posto (faturado)</label><label><input type="radio" name="pag" id="f-pag-pix" value="pix">Pix</label><label><input type="radio" name="pag" id="f-pag-cartao" value="cartao">Cartão</label></div>
+        </div>
+        <div id="w-fora" class="note warn" hidden></div>
+        <div class="f" id="box-motivo" hidden><label class="lbl" for="f-motivo">Motivo do abastecimento fora do dia</label><input type="text" id="f-motivo" placeholder="Ex.: rota extra para Luziânia, tanque abaixo da metade"></div>
+        <div id="w-km" class="note bad" hidden></div>
+        <div class="f"><label class="lbl" for="f-obs">Observação</label><input type="text" id="f-obs" placeholder="Opcional"></div>
+        <button class="btn" id="f-btn" type="submit">Salvar lançamento</button>
+        <button class="btn ghost" id="f-cancel" type="button" onclick="cancelarEdicao()" style="width:100%;margin-top:8px" hidden>Cancelar edição</button>
+        <div id="f-msg" class="note" style="margin-top:10px" hidden></div>
+      </form>
+    </div>
+    <div style="min-width:0">
+      <div class="bar">
+        <h2 style="margin:0;margin-right:auto">Lançamentos</h2>
+        <select id="l-mes" aria-label="Mês"></select>
+        <select id="l-placa" aria-label="Placa"></select>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Data</th><th>Placa</th><th class="n">Km</th><th class="n">Rodou</th><th class="n">Litros</th><th class="n">Valor</th><th class="n">R$/L</th><th class="n">Km/L</th><th>Situação</th><th>Posto · pgto</th><th></th></tr></thead>
+        <tbody id="l-body"><tr><td colspan="11" class="empty">Carregando lançamentos…</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTROLE ===== -->
+<section id="v-con" hidden>
+  <div class="bar"><h2 style="margin:0;margin-right:auto">Frota no mês</h2><select id="c-mes" aria-label="Mês"></select></div>
+  <div class="sum" id="c-sum"></div>
+  <div class="cards" id="c-cards"><div class="empty">Carregando placas…</div></div>
+  <div class="panel ficha" id="ficha" hidden></div>
+
+  <details class="panel cfg" id="cfg">
+    <summary class="lbl" style="cursor:pointer">Ajustes · dias fixos e frota</summary>
+    <div style="margin-top:14px">
+      <div class="lbl" style="margin-bottom:6px">Dias fixos de completar o tanque</div>
+      <div class="dias" id="cfg-dias"></div>
+      <div class="lbl" style="margin-bottom:6px">Frota</div>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 8px">Para trocar o motorista de um caminhão, digite o novo nome e saia do campo. Os lançamentos antigos continuam com o motorista da época.</p>
+      <div class="tbl" style="margin-bottom:12px"><table>
+        <thead><tr><th>Placa</th><th>Motorista</th><th>Caminhão</th><th>Operação</th><th>Dia fixo</th><th>Ativo</th></tr></thead>
+        <tbody id="cfg-frota"></tbody>
+      </table></div>
+      <div class="inline">
+        <input class="f-in" id="n-placa" placeholder="Placa" style="font:500 14px var(--f-body);padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:110px">
+        <input id="n-mot" placeholder="Motorista" style="font:500 14px var(--f-body);padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:140px">
+        <input id="n-cam" placeholder="Caminhão" style="font:500 14px var(--f-body);padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:140px">
+        <select id="n-op" style="font:500 14px var(--f-body);padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)"></select>
+        <button class="btn sm" type="button" onclick="addPlaca()">Adicionar placa</button>
+      </div>
+    </div>
+  </details>
+</section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+const app=initializeApp({
+  apiKey:"AIzaSyAAYAaQwzLW0Jv-Gr7kw7MqsayABUvjJV0",
+  authDomain:"varlopex.firebaseapp.com",
+  databaseURL:"https://varlopex-default-rtdb.firebaseio.com",
+  projectId:"varlopex",
+  storageBucket:"varlopex.firebasestorage.app",
+  messagingSenderId:"295994461005",
+  appId:"1:295994461005:web:1eeef88c4e26c89496c504"
+});
+const rtdb=getDatabase(app);
+const BASE='abastecimento/';
+const r=p=>ref(rtdb,BASE+p);
+const db={
+  collection:(c)=>({add:(d)=>push(r(c),d)}),
+  doc:(p)=>({set:(d)=>set(r(p),d),update:(d)=>update(r(p),d),delete:()=>remove(r(p))})
+};
+const FROTA={
+  JKR5G49:{placa:"JKR-5G49",motorista:"Warllesson",caminhao:"VW 8-150 Delivery",op:"leroy",diaFixo:true,ativo:true},
+  KCY0860:{placa:"KCY-0860",motorista:"Gabriel",caminhao:"VW 7-120 Verde",op:"leroy",diaFixo:true,ativo:true},
+  DWG6C31:{placa:"DWG-6C31",motorista:"Vagno",caminhao:"VW 8-150 Delivery",op:"leroy",diaFixo:true,ativo:true},
+  NKC3D38:{placa:"NKC-3D38",motorista:"Alleson",caminhao:"23/220",op:"mineiro",diaFixo:true,ativo:true},
+  EJV5A11:{placa:"EJV-5A11",motorista:"Neto",caminhao:"VW 13-180",op:"mineiro",diaFixo:true,ativo:true},
+  MZQ1A08:{placa:"MZQ-1A08",motorista:"Sidney",caminhao:"MB 1418",op:"mineiro",diaFixo:true,ativo:true},
+  RED6H35:{placa:"RED-6H35",motorista:"Leandro",caminhao:"VW 30/330",op:"ceasa",diaFixo:false,ativo:true},
+  IZJ0I35:{placa:"IZJ-0I35",motorista:"Kleber",caminhao:"Axor 2344",op:"brasil",diaFixo:false,ativo:true}
+};
+window.__fb={
+  db,
+  listen:(p,cb,err)=>onValue(r(p),s=>cb(s.val()),err),
+  seed:async()=>{await set(r('frota'),FROTA);await set(r('config/geral'),{set:true,dias:[1,4]});}
+};
+window.dispatchEvent(new Event('fb-pronto'));
+</script>
+<script>
+const OPS={leroy:'Leroy',mineiro:'Guaraná Mineiro',ceasa:'Ceasa',brasil:'Viagens Brasil',outra:'Outra'};
+const PAG={posto:'Posto',pix:'Pix',cartao:'Cartão'};
+const DSEM=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const DCUR=['dom','seg','ter','qua','qui','sex','sáb'];
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+let db=null, frota=[], abasts=[], cfg={dias:[1,4]}, sel=null, kmConfirm=false, delPend=null, editId=null;
+
+// ---------- helpers ----------
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function hojeISO(){return new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});}
+function dow(iso){const[a,m,d]=iso.split('-').map(Number);return new Date(a,m-1,d).getDay();}
+function addDias(iso,n){const[a,m,d]=iso.split('-').map(Number);const t=new Date(a,m-1,d+n);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
+function br(iso){const[a,m,d]=iso.split('-');return d+'/'+m;}
+function brA(iso){const[a,m,d]=iso.split('-');return d+'/'+m+'/'+a;}
+function nf(v,c=0){return (v??0).toLocaleString('pt-BR',{minimumFractionDigits:c,maximumFractionDigits:c});}
+function brl(v,c=2){return 'R$ '+nf(v,c);}
+function placaId(p){return p.toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function mesNome(k){const[a,m]=k.split('-');return MESES[+m-1]+' '+a;}
+function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2400);}
+function getP(id){return frota.find(f=>f.id===id);}
+function fixoHoje(iso){return cfg.dias.includes(dow(iso));}
+
+// ---------- cálculo por placa ----------
+function calcula(){
+  const porPlaca={};
+  for(const a of abasts){(porPlaca[a.placa]=porPlaca[a.placa]||[]).push(a);}
+  const res={};
+  for(const f of frota){
+    const L=(porPlaca[f.id]||[]).slice().sort((x,y)=>x.data<y.data?-1:x.data>y.data?1:(x.km-y.km)||((x.criado||0)-(y.criado||0)));
+    let ultCheio=null, litAcum=0, kmInt=0, litInt=0, nInt=0;
+    L.forEach((e,i)=>{
+      const prev=L[i-1];
+      e._rod=prev?e.km-prev.km:null;
+      e._flags=[];
+      if(prev && e.km<=prev.km) e._flags.push(['bad','Km menor que o anterior']);
+      if(f.diaFixo && !fixoHoje(e.data)) e._flags.push(['warn','Fora do dia fixo']);
+      if(f.diaFixo && fixoHoje(e.data) && !e.cheio) e._flags.push(['warn','Dia fixo sem completar']);
+      litAcum+=e.litros;
+      e._kml=null;
+      if(e.cheio){
+        if(ultCheio && e.km>ultCheio.km && litAcum>0){
+          e._kml=(e.km-ultCheio.km)/litAcum; kmInt+=e.km-ultCheio.km; litInt+=litAcum; nInt++;
+        }
+        ultCheio=e; litAcum=0;
+      }
+    });
+    const media=litInt>0?kmInt/litInt:null;
+    if(media && nInt>=2) L.forEach(e=>{if(e._kml!=null && e._kml<media*0.85) e._flags.push(['bad','Consumo baixo']);});
+    res[f.id]={lista:L,media,nInt,ultimo:L[L.length-1]||null};
+  }
+  return res;
+}
+function diaFixoPerdido(f,lista){
+  if(!f.diaFixo||!cfg.dias.length) return null;
+  const hoje=hojeISO();
+  for(let i=1;i<=7;i++){
+    const d=addDias(hoje,-i);
+    if(fixoHoje(d)){
+      return lista.some(e=>e.data===d&&e.cheio)?null:d;
+    }
+  }
+  return null;
+}
+
+// ---------- render: lançamentos ----------
+function opcoesMes(selId){
+  const s=$(selId), atual=s.value||hojeISO().slice(0,7);
+  const ks=new Set([hojeISO().slice(0,7),...abasts.map(a=>a.data.slice(0,7))]);
+  const arr=[...ks].sort().reverse();
+  s.innerHTML=arr.map(k=>`<option value="${k}">${mesNome(k)}</option>`).join('');
+  s.value=arr.includes(atual)?atual:arr[0];
+}
+function renderSelects(){
+  const ativos=frota.filter(f=>f.ativo!==false).sort((a,b)=>(a.op+a.motorista).localeCompare(b.op+b.motorista));
+  const fp=$('f-placa'), v=fp.value;
+  fp.innerHTML='<option value="">Escolha a placa</option>'+Object.keys(OPS).map(op=>{
+    const g=ativos.filter(f=>f.op===op); if(!g.length) return '';
+    return `<optgroup label="${OPS[op]}">`+g.map(f=>`<option value="${f.id}">${esc(f.placa)} · ${esc(f.motorista)}</option>`).join('')+'</optgroup>';
+  }).join('');
+  if(v) fp.value=v;
+  const lp=$('l-placa'), lv=lp.value;
+  lp.innerHTML='<option value="">Todas as placas</option>'+frota.map(f=>`<option value="${f.id}">${esc(f.placa)} · ${esc(f.motorista)}</option>`).join('');
+  lp.value=lv;
+  $('n-op').innerHTML=Object.keys(OPS).map(k=>`<option value="${k}">${OPS[k]}</option>`).join('');
+}
+function renderDia(R){
+  const hoje=hojeISO(), el=$('day');
+  const fixos=frota.filter(f=>f.diaFixo&&f.ativo!==false);
+  if(!cfg.dias.length){el.className='day';el.innerHTML='<span>Nenhum dia fixo definido. Defina em Controle por placa → Ajustes.</span>';return;}
+  if(fixoHoje(hoje)){
+    el.className='day fixo';
+    const chips=fixos.map(f=>{
+      const ok=(R[f.id]?.lista||[]).some(e=>e.data===hoje&&e.cheio);
+      return ok?`<span class="chip done">✓ ${esc(f.placa)} · ${esc(f.motorista)}</span>`
+               :`<button type="button" class="chip" onclick="prefill('${f.id}')">${esc(f.placa)} · ${esc(f.motorista)}</button>`;
+    }).join('');
+    const falta=fixos.filter(f=>!(R[f.id]?.lista||[]).some(e=>e.data===hoje&&e.cheio)).length;
+    el.innerHTML=`<b>Hoje é dia fixo</b><span>${falta?falta+' caminhão(ões) ainda sem lançamento de tanque cheio. Toque na placa para lançar.':'Todos os caminhões de dia fixo completaram.'}</span><div class="chips" style="flex-basis:100%">${chips}</div>`;
+  }else{
+    let d=hoje;for(let i=1;i<=7;i++){d=addDias(hoje,i);if(fixoHoje(d))break;}
+    el.className='day';
+    el.innerHTML=`<b>Hoje não é dia fixo</b><span>Próximo: ${DSEM[dow(d)]}, ${br(d)}. Abastecimento de Leroy e Mineiro hoje precisa de motivo.</span>`;
+  }
+}
+function renderLista(R){
+  const mes=$('l-mes').value, pl=$('l-placa').value;
+  const linhas=[];
+  for(const id in R){ if(pl&&id!==pl) continue; R[id].lista.forEach(e=>{if(e.data.startsWith(mes)) linhas.push(e);}); }
+  linhas.sort((a,b)=>a.data<b.data?1:a.data>b.data?-1:(b.criado||0)-(a.criado||0));
+  const tb=$('l-body');
+  if(!linhas.length){tb.innerHTML=`<tr><td colspan="11" class="empty">${abasts.length?'Nenhum lançamento neste filtro.':'Nenhum abastecimento lançado ainda. Use o formulário ao lado para lançar o primeiro.'}</td></tr>`;return;}
+  tb.innerHTML=linhas.map(e=>{
+    const f=getP(e.placa)||{placa:e.placa,motorista:''};
+    const tags=(e.cheio?'<span class="tag ok">Cheio</span>':'<span class="tag neu">Parcial</span>')+e._flags.map(([c,t])=>`<span class="tag ${c}">${t}</span>`).join('')+(e.motivo?`<div style="font-size:12px;color:var(--muted);white-space:normal;min-width:180px">Motivo: ${esc(e.motivo)}</div>`:'')+(e.obs?`<div style="font-size:12px;color:var(--muted);white-space:normal;min-width:180px">${esc(e.obs)}</div>`:'');
+    const conf=delPend===e.id;
+    return `<tr><td>${br(e.data)} <span style="color:var(--muted)">${DCUR[dow(e.data)]}</span></td><td><span class="placa">${esc(f.placa)}</span><div style="font-size:12px;color:var(--muted)">${esc(e.motorista||f.motorista)}</div></td>
+      <td class="n">${nf(e.km)}</td><td class="n">${e._rod!=null?nf(e._rod):'—'}</td><td class="n">${nf(e.litros,1)}</td><td class="n">${brl(e.valor)}</td><td class="n">${e.litros?nf(e.valor/e.litros,2):'—'}</td><td class="n">${e._kml!=null?nf(e._kml,2):'—'}</td>
+      <td>${tags}</td><td>${esc(e.posto||'—')}<div style="font-size:12px;color:var(--muted)">${PAG[e.pagamento]||''}</div></td>
+      <td>${conf?`<span class="inline"><button class="btn sm danger" onclick="excluir('${e.id}')">Excluir</button><button class="btn sm ghost" onclick="delPend=null;render()">Manter</button></span>`:`<span class="inline"><button class="del" onclick="editar('${e.id}')">Editar</button><button class="del" onclick="delPend='${e.id}';render()">Excluir</button></span>`}</td></tr>`;
+  }).join('');
+}
+
+// ---------- render: controle ----------
+function renderControle(R){
+  const mes=$('c-mes').value;
+  let gasto=0,litros=0,kmTot=0,litTot=0,alertas=0;
+  const cards=[];
+  const ordem=frota.filter(f=>f.ativo!==false).sort((a,b)=>Object.keys(OPS).indexOf(a.op)-Object.keys(OPS).indexOf(b.op)||a.motorista.localeCompare(b.motorista));
+  for(const f of ordem){
+    const r=R[f.id]||{lista:[],media:null};
+    const doMes=r.lista.filter(e=>e.data.startsWith(mes));
+    const g=doMes.reduce((s,e)=>s+e.valor,0), l=doMes.reduce((s,e)=>s+e.litros,0);
+    let kI=0,lI=0; doMes.forEach(e=>{if(e._kml!=null){const lit=(e.km-(prevCheioKm(r.lista,e)))/e._kml;kI+=e.km-prevCheioKm(r.lista,e);lI+=lit;}});
+    const kmlMes=lI>0?kI/lI:null;
+    gasto+=g;litros+=l;kmTot+=kI;litTot+=lI;
+    const precoL=l>0?g/l:null;
+    const custoKm=precoL&&kmlMes?precoL/kmlMes:null;
+    const al=[];
+    const flagsMes={};doMes.forEach(e=>e._flags.forEach(([c,t])=>{flagsMes[t]=flagsMes[t]||{c,n:0};flagsMes[t].n++;}));
+    Object.entries(flagsMes).forEach(([t,o])=>al.push(`<span class="tag ${o.c}">${t}${o.n>1?' ×'+o.n:''}</span>`));
+    const perd=diaFixoPerdido(f,r.lista); if(perd) al.unshift(`<span class="tag bad">Não completou ${DCUR[dow(perd)]} ${br(perd)}</span>`);
+    if(!r.lista.length) al.push('<span class="tag neu">Sem lançamentos</span>');
+    alertas+=al.filter(x=>!x.includes('neu')).length;
+    const u=r.ultimo;
+    cards.push(`<button class="card" type="button" aria-pressed="${sel===f.id}" onclick="abrir('${f.id}')">
+      <div class="hd"><div><span class="plate">${esc(f.placa)}</span><div class="who" style="margin-top:6px">${esc(f.motorista)} · ${OPS[f.op]||esc(f.op)}${f.diaFixo?' · dia fixo':''}</div></div>
+        <div style="text-align:right"><div class="lbl">Km/L médio</div><div class="big">${r.media?nf(r.media,2):'—'}</div></div></div>
+      <div class="kv">
+        <div><div class="lbl">Gasto no mês</div><div class="v num">${brl(g,0)}</div></div>
+        <div><div class="lbl">Litros no mês</div><div class="v num">${nf(l,0)}</div></div>
+        <div><div class="lbl">Custo por km</div><div class="v num">${custoKm?brl(custoKm):'—'}</div></div>
+        <div><div class="lbl">Último</div><div class="v num" style="font-size:16px">${u?br(u.data)+' · '+nf(u.km)+' km':'—'}</div></div>
+      </div>
+      <div class="alerts">${al.join('')||'<span class="tag ok">Tudo em ordem</span>'}</div>
+    </button>`);
+  }
+  $('c-cards').innerHTML=cards.join('')||'<div class="empty">Nenhuma placa cadastrada. Adicione em Ajustes, abaixo.</div>';
+  const kmlF=litTot>0?kmTot/litTot:null;
+  $('c-sum').innerHTML=`<div><div class="lbl">Gasto com diesel</div><div class="big">${brl(gasto,0)}</div></div>
+    <div><div class="lbl">Litros</div><div class="big">${nf(litros,0)}</div></div>
+    <div><div class="lbl">Km/L da frota</div><div class="big">${kmlF?nf(kmlF,2):'—'}</div></div>
+    <div><div class="lbl">Alertas no mês</div><div class="big" style="color:${alertas?'var(--bad)':'var(--ok)'}">${alertas}</div></div>`;
+  renderFicha(R);
+}
+function prevCheioKm(lista,e){const i=lista.indexOf(e);for(let j=i-1;j>=0;j--)if(lista[j].cheio)return lista[j].km;return e.km;}
+function spark(pts,media){
+  if(pts.length<2) return '<div class="empty" style="padding:14px">O gráfico de consumo aparece a partir de dois intervalos de tanque cheio a tanque cheio.</div>';
+  const W=600,H=90,p=8,vals=pts.map(x=>x.v),mn=Math.min(...vals,media||Infinity)*0.95,mx=Math.max(...vals,media||0)*1.05;
+  const X=i=>p+i*(W-2*p)/(pts.length-1), Y=v=>H-p-(v-mn)/(mx-mn||1)*(H-2*p);
+  const d=pts.map((q,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(q.v).toFixed(1)).join(' ');
+  const area=d+` L${X(pts.length-1).toFixed(1)} ${H-p} L${X(0).toFixed(1)} ${H-p} Z`;
+  const last=pts[pts.length-1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Km por litro em cada intervalo">
+    <path d="${area}" fill="var(--accent-soft)" stroke="none"/>
+    ${media?`<line x1="${p}" x2="${W-p}" y1="${Y(media)}" y2="${Y(media)}" stroke="var(--muted)" stroke-dasharray="4 4" stroke-width="1" vector-effect="non-scaling-stroke"/>`:''}
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    ${pts.map((q,i)=>`<circle cx="${X(i)}" cy="${Y(q.v)}" r="${i===pts.length-1?4:2.5}" fill="${q.low?'var(--bad)':'var(--accent)'}"/>`).join('')}
+  </svg><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>${br(pts[0].d)}</span><span>Linha tracejada: média ${nf(media,2)} km/L</span><span>${br(last.d)} · ${nf(last.v,2)}</span></div>`;
+}
+function renderFicha(R){
+  const el=$('ficha');
+  if(!sel||!getP(sel)){el.hidden=true;return;}
+  const f=getP(sel), r=R[sel]||{lista:[],media:null};
+  const pts=r.lista.filter(e=>e._kml!=null).map(e=>({d:e.data,v:e._kml,low:e._flags.some(x=>x[1]==='Consumo baixo')}));
+  const rows=r.lista.slice().reverse().map(e=>`<tr><td>${brA(e.data)} <span style="color:var(--muted)">${DCUR[dow(e.data)]}</span></td><td>${esc(e.motorista||f.motorista)}</td><td class="n">${nf(e.km)}</td><td class="n">${e._rod!=null?nf(e._rod):'—'}</td><td class="n">${nf(e.litros,1)}</td><td class="n">${brl(e.valor)}</td><td class="n">${e.litros?nf(e.valor/e.litros,2):'—'}</td><td class="n">${e._kml!=null?nf(e._kml,2):'—'}</td><td>${(e.cheio?'<span class="tag ok">Cheio</span>':'<span class="tag neu">Parcial</span>')+e._flags.map(([c,t])=>`<span class="tag ${c}">${t}</span>`).join('')}</td><td>${esc(e.posto||'—')} · ${PAG[e.pagamento]||''}</td><td><button class="del" onclick="editar('${e.id}')">Editar</button></td></tr>`).join('');
+  el.hidden=false;
+  el.innerHTML=`<div class="ficha-hd"><span class="plate">${esc(f.placa)}</span><span>${esc(f.motorista)} · ${esc(f.caminhao||'')} · ${OPS[f.op]||''}</span>
+    <span style="margin-left:auto" class="inline"><button class="btn sm" type="button" onclick="prefill('${f.id}')">Lançar para esta placa</button><button class="btn sm ghost" type="button" onclick="sel=null;render()">Fechar</button></span></div>
+    <div class="lbl" style="margin-bottom:4px">Km/L por intervalo de tanque cheio</div>${spark(pts,r.media)}
+    <div class="lbl" style="margin:14px 0 6px">Histórico completo</div>
+    <div class="tbl"><table><thead><tr><th>Data</th><th>Motorista</th><th class="n">Km</th><th class="n">Rodou</th><th class="n">Litros</th><th class="n">Valor</th><th class="n">R$/L</th><th class="n">Km/L</th><th>Situação</th><th>Posto · pgto</th><th></th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="11" class="empty">Nenhum abastecimento desta placa ainda.</td></tr>'}</tbody></table></div>`;
+}
+function renderCfg(){
+  $('cfg-dias').innerHTML=[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" id="cfg-d${d}" ${cfg.dias.includes(d)?'checked':''} onchange="mudaDia(${d},this.checked)"> ${DSEM[d]}</label>`).join('');
+  if($('cfg-frota').contains(document.activeElement)) return;
+  $('cfg-frota').innerHTML=frota.slice().sort((a,b)=>a.placa.localeCompare(b.placa)).map(f=>`<tr>
+    <td><span class="placa">${esc(f.placa)}</span></td>
+    <td><input class="cin" id="cfg-mot-${f.id}" value="${esc(f.motorista)}" aria-label="Motorista ${esc(f.placa)}" onchange="mudaTexto('${f.id}','motorista',this)"></td>
+    <td><input class="cin" id="cfg-cam-${f.id}" value="${esc(f.caminhao||'')}" aria-label="Caminhão ${esc(f.placa)}" onchange="mudaTexto('${f.id}','caminhao',this)"></td>
+    <td><select class="cin" id="cfg-op-${f.id}" aria-label="Operação ${esc(f.placa)}" onchange="mudaPlaca('${f.id}',{op:this.value})">${Object.keys(OPS).map(k=>`<option value="${k}" ${f.op===k?'selected':''}>${OPS[k]}</option>`).join('')}</select></td>
+    <td><input type="checkbox" id="cfg-fx-${f.id}" ${f.diaFixo?'checked':''} onchange="mudaPlaca('${f.id}',{diaFixo:this.checked})" aria-label="Dia fixo ${esc(f.placa)}"></td>
+    <td><input type="checkbox" id="cfg-at-${f.id}" ${f.ativo!==false?'checked':''} onchange="mudaPlaca('${f.id}',{ativo:this.checked})" aria-label="Ativo ${esc(f.placa)}"></td></tr>`).join('')||'<tr><td colspan="6" class="empty">Nenhuma placa cadastrada.</td></tr>';
+}
+let R={};
+function render(){
+  R=calcula();
+  opcoesMes('l-mes');opcoesMes('c-mes');
+  renderSelects();renderDia(R);renderLista(R);renderControle(R);renderCfg();formInfo();
+}
+
+// ---------- formulário ----------
+function ultimoAntes(placa,data){
+  const l=(R[placa]?.lista||[]).filter(e=>e.data<=data&&e.id!==editId);
+  return l[l.length-1]||null;
+}
+function formInfo(){
+  const placa=$('f-placa').value, data=$('f-data').value, km=parseFloat($('f-km').value), lit=parseFloat($('f-litros').value), val=parseFloat($('f-valor').value);
+  const f=getP(placa);
+  $('f-placa-info').textContent=f?`${f.caminhao||''} · ${OPS[f.op]||''}${f.diaFixo?' · dia fixo':''}`:' ';
+  $('c-preco').textContent=lit>0&&val>0?'R$/L '+nf(val/lit,2):'R$/L —';
+  const u=placa&&data?ultimoAntes(placa,data):null;
+  $('c-rod').textContent=u?(km>0?'Rodou '+nf(km-u.km)+' km desde '+br(u.data):'Último: '+nf(u.km)+' km em '+br(u.data)):'Primeiro lançamento desta placa';
+  const fora=f&&f.diaFixo&&data&&!fixoHoje(data);
+  $('w-fora').hidden=!fora; $('box-motivo').hidden=!fora;
+  if(fora) $('w-fora').textContent=`${DSEM[dow(data)][0].toUpperCase()+DSEM[dow(data)].slice(1)} não é dia fixo para ${f.placa}. Informe o motivo para registrar sua autorização.`;
+  const kmRuim=u&&km>0&&km<=u.km;
+  $('w-km').hidden=!kmRuim;
+  if(kmRuim) $('w-km').textContent=`O hodômetro informado (${nf(km)}) é menor ou igual ao último (${nf(u.km)} em ${br(u.data)}). Confira o número.`;
+  if(!kmRuim) kmConfirm=false;
+  $('f-btn').textContent=kmRuim?(kmConfirm?'Salvar mesmo assim':'Conferi, salvar mesmo assim'):(editId?'Salvar alterações':'Salvar lançamento');
+}
+function editar(id){
+  const e=abasts.find(x=>x.id===id); if(!e) return;
+  editId=id; delPend=null; kmConfirm=false; aba('lan');
+  $('f-data').value=e.data; $('f-placa').value=e.placa;
+  $('f-km').value=e.km; $('f-litros').value=e.litros; $('f-valor').value=e.valor;
+  $('f-posto').value=e.posto||''; $('f-motivo').value=e.motivo||''; $('f-obs').value=e.obs||'';
+  (e.cheio?$('f-cheio-s'):$('f-cheio-n')).checked=true;
+  const pg=document.querySelector(`input[name=pag][value="${e.pagamento}"]`); if(pg) pg.checked=true;
+  const f=getP(e.placa);
+  $('f-titulo').textContent='Editar lançamento';
+  $('f-edit-aviso').textContent=`Editando o abastecimento de ${f?f.placa:e.placa} em ${brA(e.data)}. Ajuste os campos e salve.`;
+  $('f-edit-aviso').hidden=false; $('f-cancel').hidden=false; $('f-msg').hidden=true;
+  render(); window.scrollTo({top:0,behavior:'smooth'}); $('f-km').focus({preventScroll:true});
+}
+function limparForm(){
+  ['f-km','f-litros','f-valor','f-posto','f-motivo','f-obs'].forEach(id=>$(id).value='');
+  $('f-cheio-s').checked=true; $('f-pag-posto').checked=true;
+}
+function cancelarEdicao(){
+  editId=null; kmConfirm=false; limparForm(); $('f-data').value=hojeISO();
+  $('f-titulo').textContent='Novo lançamento'; $('f-edit-aviso').hidden=true; $('f-cancel').hidden=true;
+  render();
+}
+['f-placa','f-data','f-km','f-litros','f-valor'].forEach(id=>$(id).addEventListener('input',formInfo));
+function prefill(id){aba('lan');$('f-placa').value=id;$('f-data').value=hojeISO();formInfo();$('f-km').focus();window.scrollTo({top:0,behavior:'smooth'});}
+$('form').addEventListener('submit',async ev=>{
+  ev.preventDefault();
+  const m=$('f-msg'); m.hidden=true;
+  if(!db){m.className='note bad';m.textContent='Sem conexão com o banco. Recarregue a página.';m.hidden=false;return;}
+  const placa=$('f-placa').value,data=$('f-data').value,km=parseFloat($('f-km').value),litros=parseFloat($('f-litros').value),valor=parseFloat($('f-valor').value);
+  if(!placa||!data||!(km>0)||!(litros>0)||!(valor>0)){m.className='note bad';m.textContent='Preencha data, placa, hodômetro, litros e valor.';m.hidden=false;return;}
+  const f=getP(placa), fora=f.diaFixo&&!fixoHoje(data), motivo=$('f-motivo').value.trim();
+  if(fora&&!motivo){m.className='note bad';m.textContent='Informe o motivo do abastecimento fora do dia fixo.';m.hidden=false;$('f-motivo').focus();return;}
+  const u=ultimoAntes(placa,data);
+  if(u&&km<=u.km&&!kmConfirm){kmConfirm=true;formInfo();return;}
+  const orig=editId?abasts.find(x=>x.id===editId):null;
+  const doc={placa,data,km,litros,valor,posto:$('f-posto').value.trim(),pagamento:document.querySelector('input[name=pag]:checked').value,cheio:$('f-cheio-s').checked,motivo:fora?motivo:'',obs:$('f-obs').value.trim(),criado:orig?(orig.criado||Date.now()):Date.now()};
+  doc.motorista=(orig&&orig.placa===placa&&orig.motorista)?orig.motorista:f.motorista;
+  if(orig) doc.editado=Date.now();
+  const b=$('f-btn');b.disabled=true;
+  try{
+    if(orig){
+      await db.doc('abast/'+orig.id).set(doc);
+      cancelarEdicao(); toast('Alterações salvas');
+    }else{
+      await db.collection('abast').add(doc);
+      ['f-km','f-litros','f-valor','f-motivo','f-obs'].forEach(id=>$(id).value='');
+      kmConfirm=false;toast('Lançamento salvo');formInfo();
+    }
+  }catch(e){m.className='note bad';m.textContent=e&&e.code==='quota_exceeded'?'O banco atingiu o limite de registros.':'Não foi possível salvar. Confira a conexão e tente de novo.';m.hidden=false;}
+  b.disabled=false;
+});
+async function excluir(id){
+  delPend=null; if(editId===id) cancelarEdicao();
+  try{await db.doc('abast/'+id).delete();toast('Lançamento excluído');}catch(e){toast('Não foi possível excluir');}
+}
+
+// ---------- ajustes ----------
+async function mudaDia(d,on){
+  const dias=on?[...new Set([...cfg.dias,d])]:cfg.dias.filter(x=>x!==d);
+  try{await db.doc('config/geral').set({set:true,dias:dias.sort()});}catch(e){toast('Não foi possível salvar');}
+}
+async function mudaPlaca(id,patch){try{await db.doc('frota/'+id).update(patch);toast('Frota atualizada');}catch(e){toast('Não foi possível salvar');}}
+function mudaTexto(id,campo,el){
+  const v=el.value.trim(), f=getP(id);
+  if(campo==='motorista'&&!v){el.value=f?f.motorista:'';toast('O motorista não pode ficar em branco');return;}
+  if(f&&(f[campo]||'')===v) return;
+  el.blur(); mudaPlaca(id,{[campo]:v});
+}
+async function addPlaca(){
+  const placa=$('n-placa').value.trim().toUpperCase(), mot=$('n-mot').value.trim();
+  if(!placa||!mot){toast('Informe placa e motorista');return;}
+  const id=placaId(placa);
+  if(getP(id)){toast('Essa placa já está cadastrada');return;}
+  const op=$('n-op').value;
+  try{await db.doc('frota/'+id).set({placa,motorista:mot,caminhao:$('n-cam').value.trim(),op,diaFixo:op==='leroy'||op==='mineiro',ativo:true});
+    ['n-placa','n-mot','n-cam'].forEach(i=>$(i).value='');toast('Placa adicionada');}catch(e){toast('Não foi possível salvar');}
+}
+
+// ---------- navegação ----------
+function aba(t){
+  $('v-lan').hidden=t!=='lan';$('v-con').hidden=t!=='con';
+  $('tab-lan').setAttribute('aria-selected',t==='lan');$('tab-con').setAttribute('aria-selected',t==='con');
+  try{localStorage.setItem('aba',t);}catch(e){}
+}
+function abrir(id){sel=sel===id?null:id;render();if(sel)setTimeout(()=>$('ficha').scrollIntoView({behavior:'smooth',block:'start'}),50);}
+['l-mes','l-placa','c-mes'].forEach(id=>$(id).addEventListener('change',render));
+
+// ---------- início ----------
+$('f-data').value=hojeISO();
+try{const t=localStorage.getItem('aba');if(t==='con')aba('con');}catch(e){}
+render();
+window.addEventListener('fb-pronto',()=>{
+  db=window.__fb.db;
+  const L=window.__fb.listen;
+  const err=()=>{$('status').textContent='Sem conexão com o banco. Recarregue a página.';};
+  let semeado=false;
+  L('frota',v=>{
+    if(!v&&!semeado){semeado=true;window.__fb.seed();return;}
+    frota=Object.entries(v||{}).map(([id,x])=>({id,...x}));$('status').textContent='Sincronizado';render();
+  },err);
+  L('abast',v=>{abasts=Object.entries(v||{}).map(([id,x])=>({id,...x,km:+x.km,litros:+x.litros,valor:+x.valor}));render();},err);
+  L('config/geral',v=>{if(v&&v.set){cfg={dias:Array.isArray(v.dias)?v.dias.map(Number):Object.values(v.dias||{}).map(Number)};}render();},err);
+});
+if(window.__fb) window.dispatchEvent(new Event('fb-pronto'));
+</script>
+
+</body>
+</html>
